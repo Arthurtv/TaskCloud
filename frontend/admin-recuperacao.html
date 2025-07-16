@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Recuperações de Senha</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #fafafa;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    table {
+      width: 100%;
+      max-width: 600px;
+      margin: 20px auto;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .empty {
+      text-align: center;
+      margin-top: 30px;
+      color: #888;
+    }
+    .clear-btn {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .clear-btn:hover {
+      background-color: #a71d2a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Recuperações de Senha</h1>
+
+  <div id="tabela-container"></div>
+
+  <button class="clear-btn" onclick="limparRecuperacoes()">Limpar tudo</button>
+
+  <script>
+    function carregarRecuperacoes() {
+      var dados = localStorage.getItem("recuperacoes");
+      var container = document.getElementById("tabela-container");
+
+      if (!dados) {
+        container.innerHTML = "<p class='empty'>Nenhum pedido de recuperação encontrado.</p>";
+        return;
+      }
+
+      try {
+        var lista = JSON.parse(dados);
+        if (lista.length === 0) {
+          container.innerHTML = "<p class='empty'>Nenhum pedido de recuperação encontrado.</p>";
+          return;
+        }
+
+        var html = "<table><thead><tr><th>E-mail</th><th>Data</th></tr></thead><tbody>";
+
+        for (var i = 0; i < lista.length; i++) {
+          var item = lista[i];
+          var dataFormatada = new Date(item.data).toLocaleString("pt-BR");
+          html += "<tr><td>" + item.email + "</td><td>" + dataFormatada + "</td></tr>";
+        }
+
+        html += "</tbody></table>";
+        container.innerHTML = html;
+
+      } catch (e) {
+        container.innerHTML = "<p class='empty'>Erro ao carregar dados.</p>";
+      }
+    }
+
+    function limparRecuperacoes() {
+      if (confirm("Tem certeza que deseja apagar todos os registros?")) {
+        localStorage.removeItem("recuperacoes");
+        carregarRecuperacoes();
+      }
+    }
+
+    // Carrega ao abrir a página
+    carregarRecuperacoes();
+  </script>
+</body>
+</html>

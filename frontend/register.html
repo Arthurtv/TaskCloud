@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar - TaskCloud</title>
+  <link rel="stylesheet" href="register.css">
+
+  <!-- Fallback CSS básico -->
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+    .register-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .register-card {
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+    .logo {
+      max-width: 120px;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      box-sizing: border-box;
+    }
+    .password-hint {
+      font-size: 12px;
+      color: #888;
+      margin-top: 4px;
+    }
+    .register-btn {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .register-btn:hover {
+      background-color: #218838;
+    }
+    .login-link {
+      margin-top: 15px;
+    }
+    .login-link a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-card">
+      <img src="logo-taskcloud.png" alt="TaskCloud Logo" class="logo">
+      <h2>Criar nova conta</h2>
+      
+      <form id="registerForm" onsubmit="return false;">
+        <div class="input-group">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" required>
+        </div>
+        
+        <div class="input-group">
+          <label for="senha">Senha</label>
+          <input type="password" id="senha" placeholder="Crie uma senha segura" required>
+          <div class="password-hint">Use pelo menos 8 caracteres</div>
+        </div>
+        
+        <button type="button" onclick="registrar()" class="register-btn">Registrar</button>
+      </form>
+      
+      <div class="login-link">
+        Já tem uma conta? <a href="login.html">Faça login</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function registrar() {
+      var email = document.getElementById('email').value;
+      var senha = document.getElementById('senha').value;
+
+      if (!email || !senha) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+      }
+
+      if (senha.length < 8) {
+        alert("A senha deve ter pelo menos 8 caracteres!");
+        return;
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('POST', 'http://localhost:5000/register', true);
+      xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              var data = JSON.parse(xhr.responseText);
+              alert(JSON.stringify(data));
+              if (data.success) {
+                window.location.href = "login.html";
+              }
+            } catch (e) {
+              alert("Erro ao processar resposta: " + e.message);
+            }
+          } else {
+            alert("Erro na requisição: " + xhr.statusText);
+          }
+        }
+      };
+
+      xhr.onerror = function () {
+        alert("Erro ao conectar com o servidor.");
+      };
+
+      xhr.send(JSON.stringify({ email: email, senha: senha }));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarefas - TaskCloud</title>
+  <link rel="stylesheet" href="tasks.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <img src="logo-taskcloud.png" alt="TaskCloud Logo" class="logo">
+      <h1>Suas Tarefas</h1>
+      <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Sair
+      </button>
+    </header>
+
+    <main class="task-container">
+      <div class="add-task">
+        <input type="text" id="nova" placeholder="Adicione uma nova tarefa..." class="task-input">
+        <button onclick="addTarefa()" class="add-btn">
+          <i class="fas fa-plus"></i> Adicionar
+        </button>
+      </div>
+
+      <ul id="lista" class="task-list"></ul>
+    </main>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem("user_id");
+    if (!userId) {
+      alert("Você precisa fazer login");
+      window.location.href = "login.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("user_id");
+      window.location.href = "login.html";
+    }
+
+    function carregarTarefas() {
+      fetch('http://localhost:5000/tasks/' + userId)
+        .then(res => res.json())
+        .then(data => {
+          const ul = document.getElementById('lista');
+          ul.innerHTML = "";
+          data.forEach(t => {
+            const li = document.createElement("li");
+            li.className = `task-item ${t.status}`;
+            li.innerHTML = `
+              <span class="task-title">${t.title}</span>
+              <span class="task-status">${t.status === "pendente" ? "Pendente" : "Concluída"}</span>
+              <button class="delete-btn" onclick="removerTarefa(event, ${t.id})">
+                <i class="fas fa-trash"></i>
+              </button>
+            `;
+            li.onclick = (e) => {
+              if (!e.target.classList.contains('delete-btn')) {
+                atualizarStatus(t.id, t.status);
+              }
+            };
+            ul.appendChild(li);
+          });
+        });
+    }
+
+    function addTarefa() {
+      const titulo = document.getElementById('nova').value.trim();
+      if (!titulo) {
+        alert("Por favor, digite uma tarefa!");
+        return;
+      }
+
+      fetch('http://localhost:5000/tasks', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: userId, title: titulo})
+      })
+      .then(() => {
+        document.getElementById('nova').value = "";
+        carregarTarefas();
+      })
+      .catch(error => alert("Erro ao adicionar tarefa: " + error.message));
+    }
+
+    function atualizarStatus(id, status) {
+      const novoStatus = status === "pendente" ? "concluida" : "pendente";
+      fetch('http://localhost:5000/tasks/' + id, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({status: novoStatus})
+      }).then(() => carregarTarefas());
+    }
+
+    function removerTarefa(event, id) {
+      event.stopPropagation();
+      if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+        fetch('http://localhost:5000/tasks/' + id, {
+          method: 'DELETE'
+        }).then(() => carregarTarefas());
+      }
+    }
+
+    document.getElementById('nova').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        addTarefa();
+      }
+    });
+
+    carregarTarefas();
+  </script>
+</body>
+</html>
